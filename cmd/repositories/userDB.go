@@ -84,16 +84,19 @@ func GetUser(user models.User, id int) (models.User, error) {
 	return user, nil
 }
 
-func GetAllUsers() ([]models.User, error) {
+func GetAllUsers(page, limit int) ([]models.User, error) {
 	db := storage.GetDB()
 
 	sqlStatement := `
 	SELECT id, full_name, age, habits, alive, created_at FROM users
 	ORDER BY id ASC
+	LIMIT $1
+	OFFSET $2
 	`
 
+	offset := (page - 1) * limit
 	// db.Query - возвращает массив строк
-	rows, err := db.Query(sqlStatement)
+	rows, err := db.Query(sqlStatement, limit, offset)
 	if err != nil {
 		return nil, err
 	}

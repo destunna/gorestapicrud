@@ -63,7 +63,12 @@ func HandleGetUser(c echo.Context) error {
 }
 
 func HandleGetAllUsers(c echo.Context) error {
-	users, err := repositories.GetAllUsers()
+	page := c.QueryParam("page")
+	pageInt, err := strconv.Atoi(page)
+
+	limit := 2
+
+	users, err := repositories.GetAllUsers(pageInt, limit)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
