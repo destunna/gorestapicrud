@@ -2,20 +2,27 @@ package handlers
 
 import (
 	"gorestapicrud/cmd/models"
-	"gorestapicrud/cmd/repositories"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-func HandleCreateUser(c echo.Context) error {
+type UserHandler struct {
+	Repo models.UserRepository
+}
+
+func NewUserHandler(repo models.UserRepository) *UserHandler {
+	return &UserHandler{Repo: repo}
+}
+
+func (h *UserHandler) HandleCreateUser(c echo.Context) error {
 	user := models.User{}
 
 	// c.Bind() - функция для привязки тела запроса к user переменной
 	c.Bind(&user)
 
-	newUser, err := repositories.CreateUser(user)
+	newUser, err := h.Repo.CreateUser(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -23,7 +30,7 @@ func HandleCreateUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, newUser)
 }
 
-func HandleUpdateUser(c echo.Context) error {
+func (h *UserHandler) HandleUpdateUser(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
@@ -35,7 +42,7 @@ func HandleUpdateUser(c echo.Context) error {
 	user := models.User{}
 	c.Bind(&user)
 
-	updateUser, err := repositories.UpdateUser(user, idInt)
+	updateUser, err := h.Repo.UpdateUser(user, idInt)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -43,7 +50,7 @@ func HandleUpdateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, updateUser)
 }
 
-func HandleGetUser(c echo.Context) error {
+func (h *UserHandler) HandleGetUser(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
@@ -54,7 +61,7 @@ func HandleGetUser(c echo.Context) error {
 
 	user := models.User{}
 
-	currentUser, err := repositories.GetUser(user, idInt)
+	currentUser, err := h.Repo.GetUser(user, idInt)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
@@ -62,13 +69,13 @@ func HandleGetUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, currentUser)
 }
 
-func HandleGetAllUsers(c echo.Context) error {
+func (h *UserHandler) HandleGetAllUsers(c echo.Context) error {
 	page := c.QueryParam("page")
 	pageInt, err := strconv.Atoi(page)
 
 	limit := 2
 
-	users, err := repositories.GetAllUsers(pageInt, limit)
+	users, err := h.Repo.GetAllUsers(pageInt, limit)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
@@ -81,7 +88,7 @@ func HandleGetAllUsers(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
-func HandleDeleteUser(c echo.Context) error {
+func (h *UserHandler) HandleDeleteUser(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
@@ -92,7 +99,7 @@ func HandleDeleteUser(c echo.Context) error {
 
 	user := models.User{}
 
-	deleteErr := repositories.DeleteUser(user, idInt)
+	deleteErr := h.Repo.DeleteUser(user, idInt)
 	if deleteErr != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
