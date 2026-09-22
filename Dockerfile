@@ -6,4 +6,4 @@ COPY . .
 
 RUN go mod tidy
 
-CMD ["make", "go"]
+CMD ["make", "run"]
