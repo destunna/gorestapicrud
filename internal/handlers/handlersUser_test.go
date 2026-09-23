@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"gorestapicrud/cmd/models"
+	"gorestapicrud/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,10 +17,10 @@ import (
 // Каждое поле — это функция, поведение которой мы можем задавать прямо внутри конкретного теста.
 type MockUserRepository struct {
 	MockGetAllUsers func(page, limit int) ([]models.User, error)
-	MockGetUser     func(user models.User, id int) (models.User, error)
+	MockGetUser     func(id int) (models.User, error)
 	MockUpdateUser  func(user models.User, id int) (models.User, error)
 	MockCreateUser  func(user models.User) (models.User, error)
-	MockDeleteUser  func(user models.User, id int) error
+	MockDeleteUser  func(id int) error
 }
 
 func (m *MockUserRepository) GetAllUsers(page, limit int) ([]models.User, error) {
@@ -31,9 +31,9 @@ func (m *MockUserRepository) GetAllUsers(page, limit int) ([]models.User, error)
 	return []models.User{}, errors.New("MockGetAllUsers не переопределен в тесте")
 }
 
-func (m *MockUserRepository) GetUser(user models.User, id int) (models.User, error) {
+func (m *MockUserRepository) GetUser(id int) (models.User, error) {
 	if m.MockGetUser != nil {
-		return m.MockGetUser(user, id)
+		return m.MockGetUser(id)
 	}
 
 	return models.User{}, errors.New("MockGetUser не переопределен в тесте")
@@ -55,9 +55,9 @@ func (m *MockUserRepository) CreateUser(user models.User) (models.User, error) {
 	return models.User{}, nil
 }
 
-func (m *MockUserRepository) DeleteUser(user models.User, id int) error {
+func (m *MockUserRepository) DeleteUser(id int) error {
 	if m.MockDeleteUser != nil {
-		return m.MockDeleteUser(user, id)
+		return m.MockDeleteUser(id)
 	}
 
 	return errors.New("MockDeleteUser не переопределен в тесте")
@@ -109,7 +109,7 @@ func TestHandleGetAllUsers(t *testing.T) {
 func TestHandleGetUser(t *testing.T) {
 	e := echo.New()
 	mockRepo := &MockUserRepository{
-		MockGetUser: func(user models.User, id int) (models.User, error) {
+		MockGetUser: func(id int) (models.User, error) {
 			return models.User{
 				FullName: "Alex",
 				Age:      "15",
@@ -265,7 +265,7 @@ func TestHandleCreateUser(t *testing.T) {
 func TestHandleDeleteUser(t *testing.T) {
 	e := echo.New()
 	mockRepo := &MockUserRepository{
-		MockDeleteUser: func(user models.User, id int) error {
+		MockDeleteUser: func(id int) error {
 			return nil
 		},
 	}

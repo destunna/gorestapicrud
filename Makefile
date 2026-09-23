@@ -1,7 +1,7 @@
 .PHONY: up down
 
 run:
-	go run main.go
+	go run cmd/main.go
 
 up:
 	docker compose up --build -d

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"gorestapicrud/cmd/models"
+	"gorestapicrud/internal/models"
 	"net/http"
 	"strconv"
 
@@ -59,9 +59,7 @@ func (h *UserHandler) HandleGetUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID format"})
 	}
 
-	user := models.User{}
-
-	currentUser, err := h.Repo.GetUser(user, idInt)
+	currentUser, err := h.Repo.GetUser(idInt)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
@@ -97,10 +95,7 @@ func (h *UserHandler) HandleDeleteUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID format"})
 	}
 
-	user := models.User{}
-
-	deleteErr := h.Repo.DeleteUser(user, idInt)
-	if deleteErr != nil {
+	if err := h.Repo.DeleteUser(idInt); err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
 

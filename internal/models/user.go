@@ -14,7 +14,7 @@ type User struct {
 type UserRepository interface {
 	CreateUser(user User) (User, error)
 	UpdateUser(user User, id int) (User, error)
-	GetUser(user User, id int) (User, error)
+	GetUser(id int) (User, error)
 	GetAllUsers(page, limit int) ([]User, error)
-	DeleteUser(user User, id int) error
+	DeleteUser(id int) error
 }

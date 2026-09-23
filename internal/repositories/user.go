@@ -1,14 +1,23 @@
 package repositories
 
 import (
-	"gorestapicrud/cmd/models"
-	"gorestapicrud/cmd/storage"
+	"database/sql"
+	"gorestapicrud/internal/models"
+
 	"time"
 )
 
-func CreateUser(user models.User) (models.User, error) {
-	// storage.GetDB() - функция для получения подключения к базе данных
-	db := storage.GetDB()
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) CreateUser(user models.User) (models.User, error) {
+	// r.db - функция для получения подключения к базе данных
+	db := r.db
 	createdAt := time.Now()
 
 	sqlStatement := `
@@ -43,8 +52,8 @@ func CreateUser(user models.User) (models.User, error) {
 	return user, nil
 }
 
-func UpdateUser(user models.User, id int) (models.User, error) {
-	db := storage.GetDB()
+func (r *UserRepository) UpdateUser(user models.User, id int) (models.User, error) {
+	db := r.db
 
 	sqlStatement := `
 	UPDATE users
@@ -67,12 +76,14 @@ func UpdateUser(user models.User, id int) (models.User, error) {
 	return user, nil
 }
 
-func GetUser(user models.User, id int) (models.User, error) {
-	db := storage.GetDB()
+func (r *UserRepository) GetUser(id int) (models.User, error) {
+	db := r.db
 
 	sqlStatement := `
 	SELECT full_name, age, habits, alive, created_at FROM users WHERE id = $1
 	`
+
+	var user models.User
 
 	err := db.QueryRow(sqlStatement, id).Scan(&user.FullName, &user.Age, &user.Habits, &user.Alive, &user.CreatedAt)
 	if err != nil {
@@ -84,8 +95,8 @@ func GetUser(user models.User, id int) (models.User, error) {
 	return user, nil
 }
 
-func GetAllUsers(page, limit int) ([]models.User, error) {
-	db := storage.GetDB()
+func (r *UserRepository) GetAllUsers(page, limit int) ([]models.User, error) {
+	db := r.db
 
 	sqlStatement := `
 	SELECT id, full_name, age, habits, alive, created_at FROM users
@@ -129,15 +140,17 @@ func GetAllUsers(page, limit int) ([]models.User, error) {
 	return users, nil
 }
 
-func DeleteUser(user models.User, id int) error {
-	db := storage.GetDB()
+func (r *UserRepository) DeleteUser(id int) error {
+	db := r.db
 
 	sqlStatement := `
 	DELETE FROM users WHERE id = $1
 	RETURNING id
 	`
 
-	err := db.QueryRow(sqlStatement, id).Scan(&user.Id)
+	var deletedID int
+
+	err := db.QueryRow(sqlStatement, id).Scan(&deletedID)
 	if err != nil {
 		return err
 	}
